@@ -26,8 +26,8 @@ declare(strict_types=1);
 
 namespace OCA\Contacts\Dav;
 
+use DAV\Exception\BadRequest;
 use Sabre\CardDAV\Card;
-use Sabre\DAV;
 use Sabre\DAV\INode;
 use Sabre\DAV\PropPatch;
 use Sabre\DAV\Server;
@@ -67,10 +67,9 @@ class PatchPlugin extends ServerPlugin {
 	 *     - the node implements our partial update interface
 	 *
 	 * @param string $uri
-	 *
 	 * @return array
 	 */
-	public function getHTTPMethods($uri) {
+	public function getHTTPMethods($uri): array {
 		$tree = $this->server->tree;
 
 		if ($tree->nodeExists($uri)) {
@@ -88,9 +87,10 @@ class PatchPlugin extends ServerPlugin {
 	 *
 	 * @param PropPatch $propPatch
 	 * @param INode $node
-	 * @return void
+	 * @return bool
+	 * @throws BadRequest
 	 */
-	public function httpPatch(RequestInterface $request, ResponseInterface $response) {
+	public function httpPatch(RequestInterface $request, ResponseInterface $response): bool {
 		$path = $request->getPath();
 		$node = $this->server->tree->getNodeForPath($path);
 
@@ -107,7 +107,7 @@ class PatchPlugin extends ServerPlugin {
 		// Init property name & value
 		$propertyName = $request->getHeader('X-Property');
 		if (is_null($propertyName)) {
-			throw new DAV\Exception\BadRequest('No valid "X-Property" found in the headers');
+			throw new BadRequest('No valid "X-Property" found in the headers');
 		}
 
 		$propertyData = $request->getHeader('X-Property-Replace');
@@ -116,7 +116,7 @@ class PatchPlugin extends ServerPlugin {
 			$propertyData = $request->getHeader('X-Property-Append');
 			$method = self::METHOD_APPEND;
 			if (is_null($propertyData)) {
-				throw new DAV\Exception\BadRequest('No valid "X-Property-Append" or "X-Property-Replace" found in the headers');
+				throw new BadRequest('No valid "X-Property-Append" or "X-Property-Replace" found in the headers');
 			}
 		}
 
@@ -126,7 +126,7 @@ class PatchPlugin extends ServerPlugin {
 
 		// We cannot know which one to update in that case
 		if (count($properties) > 1) {
-			throw new DAV\Exception\BadRequest('The specified property appear more than once');
+			throw new BadRequest('The specified property appear more than once');
 		}
 		
 		// Init if not in the vcard
@@ -162,7 +162,7 @@ class PatchPlugin extends ServerPlugin {
 	 *
 	 * @return string
 	 */
-	public function getPluginName() {
+	public function getPluginName(): string {
 		return 'vcard-patch';
 	}
 
@@ -177,7 +177,7 @@ class PatchPlugin extends ServerPlugin {
 	 *
 	 * @return array
 	 */
-	public function getPluginInfo() {
+	public function getPluginInfo(): array {
 		return [
 			'name'        => $this->getPluginName(),
 			'description' => 'Allow to patch unique properties.'
