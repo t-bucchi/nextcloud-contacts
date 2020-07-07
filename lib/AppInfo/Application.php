@@ -23,6 +23,8 @@
 namespace OCA\Contacts\AppInfo;
 
 use OCA\Contacts\Dav\PatchPlugin;
+use OCA\Contacts\Listener\LoadContactsFilesActions;
+use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCP\AppFramework\App;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\SabrePluginEvent;
@@ -49,5 +51,8 @@ class Application extends App {
 				$server->addPlugin($this->getContainer()->query(PatchPlugin::class));
 			}
 		});
+
+		// Register files action
+		$eventDispatcher->addServiceListener(LoadAdditionalScriptsEvent::class, LoadContactsFilesActions::class);
 	}
 }
