@@ -34,5 +34,6 @@ window.addEventListener('DOMContentLoaded', () => {
 				window.location = generateUrl(`/apps/contacts/import?file=${absPath}`)
 			},
 		})
+		OCA.Files.fileActions.setDefault('text/vcard', 'contacts_import')
 	}
 })
