@@ -291,12 +291,10 @@ export default {
 			searchQuery: '',
 			showContactPicker: false,
 			contactPickerforGroup: null,
+			pickerData: [],
 			pickerTypes: [{
 				id: 'contact',
 				label: t('contacts', 'Contacts'),
-			}, {
-				id: 'group',
-				label: t('contacts', 'Groups'),
 			}],
 
 			// Bulk processing
@@ -396,26 +394,6 @@ export default {
 		// Recently contacted data
 		recentlyContactedContacts() {
 			return this.groups.find(group => group.name === t('contactsinteraction', 'Recently contacted'))
-		},
-
-		/**
-		 * Contacts formatted for the EntityPicker
-		 * @returns {Array}
-		 */
-		pickerData() {
-			return [...Object.values(this.contacts).map(contact => ({
-				id: contact.key,
-				label: contact.displayName,
-				type: 'contact',
-			})), {
-				id: '1561',
-				label: 'Test group',
-				type: 'group',
-			}, {
-				id: '15f61',
-				label: 'Test group 2',
-				type: 'group',
-			}]
 		},
 	},
 
@@ -701,11 +679,29 @@ export default {
 				}
 			}
 
+			// Init data set
+			this.pickerData = this.sortedContacts
+				.map(({ key }) => {
+					const contact = this.contacts[key]
+					return {
+						id: contact.key,
+						label: contact.displayName,
+						type: 'contact',
+						readOnly: contact.addressbook.readOnly,
+						groups: contact.groups,
+					}
+				})
+				// No read only contacts
+				.filter(contact => !contact.readOnly)
+				// No contacts already present in group
+				.filter(contact => contact.groups.indexOf(group.name) === -1)
+
 			this.showContactPicker = true
 			this.contactPickerforGroup = group
 		},
 
 		onContactPickerClose() {
+			this.pickerData = []
 			this.showContactPicker = false
 		},
 
